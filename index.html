@@ -3,85 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHLMS Tech Portal</title>
+    <title>AHLMS | Cloud Inventory Portal</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .container { background-color: #1e1e1e; padding: 25px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); width: 100%; max-width: 400px; text-align: center; }
-        h2 { color: #4CAF50; margin-bottom: 20px; }
-        label { display: block; text-align: left; margin-bottom: 8px; font-weight: bold; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #333; background: #2a2a2a; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        #startScan { background-color: #2196F3; color: white; }
-        #submitBtn { background-color: #4CAF50; color: white; }
-        #statusMessage { margin-top: 20px; font-weight: bold; min-height: 24px; }
-        #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+        :root {
+            --primary: #4CAF50;
+            --secondary: #3b82f6;
+            --danger: #ef4444;
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
+        }
+
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            background-color: var(--bg); 
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: #f8fafc; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+            margin: 0; 
+            padding: 20px; 
+        }
+
+        .container { 
+            background: var(--card);
+            backdrop-filter: blur(10px);
+            padding: 30px; 
+            border-radius: 20px; 
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
+            width: 100%; 
+            max-width: 420px; 
+            text-align: center; 
+        }
+
+        h2 { color: var(--primary); margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
+
+        label { display: block; text-align: left; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+
+        input, select { 
+            width: 100%; 
+            padding: 14px; 
+            margin-bottom: 20px; 
+            border-radius: 10px; 
+            border: 1px solid #334155; 
+            background: #0f172a; 
+            color: white; 
+            box-sizing: border-box; 
+            font-size: 1rem;
+        }
+
+        button { 
+            width: 100%; padding: 16px; border: none; border-radius: 12px; 
+            font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 1rem;
+        }
+
+        #startScan { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; margin-bottom: 10px;}
+        #submitBtn { background: linear-gradient(135deg, #10b981, #059669); color: white; margin-top: 15px;}
+        
+        button:active { transform: scale(0.98); }
+        button:disabled { opacity: 0.5; }
+
+        #reader { width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 20px; background: #000; border: 2px solid #334155; }
+        #statusMessage { margin-top: 20px; font-size: 0.9rem; min-height: 20px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>AHLMS Tech Portal</h2>
+        <h2>AHLMS Portal</h2>
+        
+        <label for="cameraSelect">SELECT CAMERA LENS</label>
+        <select id="cameraSelect">
+            <option value="">Detecting cameras...</option>
+        </select>
         
         <div id="reader"></div>
-        <button id="startScan">Open Camera Scanner</button>
+        <button id="startScan" onclick="startScanner()">📷 Open Selected Camera</button>
 
-        <label for="serial">Hardware Serial Number</label>
-        <input type="text" id="serial" placeholder="Scan or type SN...">
+        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+            <label for="serial">DEVICE SERIAL NUMBER</label>
+            <input type="text" id="serial" placeholder="Waiting for scan...">
 
-        <label for="deviceType">Device Type</label>
-        <select id="deviceType">
-            <option value="HP EliteBook">HP EliteBook</option>
-            <option value="Dell Latitude">Dell Latitude</option>
-            <option value="Cisco Router">Cisco Router</option>
-        </select>
+            <label for="deviceType">ASSET CATEGORY</label>
+            <select id="deviceType">
+                <option value="HP EliteBook">HP EliteBook (Laptop)</option>
+                <option value="Dell Latitude">Dell Latitude (Laptop)</option>
+                <option value="Cisco Router">Cisco Catalyst (Network)</option>
+            </select>
 
-        <button id="submitBtn" onclick="submitScan()">Submit to Cloud</button>
+            <button id="submitBtn" onclick="submitScan()">🚀 Submit to Cloud</button>
+        </div>
+
         <div id="statusMessage"></div>
     </div>
 
     <script>
         let html5QrCode;
 
+        // Automatically load camera list on page load
+        async function getCameras() {
+            const cameraSelect = document.getElementById('cameraSelect');
+            try {
+                const devices = await Html5Qrcode.getCameras();
+                if (devices && devices.length > 0) {
+                    cameraSelect.innerHTML = ""; // Clear loader
+                    devices.forEach((device, index) => {
+                        const option = document.createElement("option");
+                        option.value = device.id;
+                        // Better labeling for different lenses
+                        option.text = device.label || `Camera ${index + 1}`;
+                        cameraSelect.appendChild(option);
+                    });
+                } else {
+                    cameraSelect.innerHTML = "<option>No cameras found</option>";
+                }
+            } catch (err) {
+                cameraSelect.innerHTML = "<option>Permission Denied</option>";
+            }
+        }
+
+        window.onload = getCameras;
+
         async function startScanner() {
             const statusDiv = document.getElementById('statusMessage');
             const startButton = document.getElementById('startScan');
+            const cameraId = document.getElementById('cameraSelect').value;
             
-            startButton.disabled = true;
-            statusDiv.innerHTML = "Initializing camera...";
+            if(!cameraId) {
+                statusDiv.innerHTML = "<span style='color: #ef4444;'>Please select a camera lens first.</span>";
+                return;
+            }
 
-            // Destroy old instance if it exists
-            if(html5QrCode) { await html5QrCode.clear(); }
+            startButton.disabled = true;
+            statusDiv.innerHTML = "<span style='color: #94a3b8;'>Activating lens...</span>";
+
+            if(html5QrCode) { try { await html5QrCode.clear(); } catch(e) {} }
             html5QrCode = new Html5Qrcode("reader");
             
             const config = { fps: 25, qrbox: { width: 280, height: 120 }, aspectRatio: 1.777778 };
 
             try {
-                const devices = await Html5Qrcode.getCameras();
-                if (devices && devices.length > 0) {
-                    // Manual Override: Pick the last camera (usually the main back lens)
-                    const backCameraId = devices[devices.length - 1].id;
-                    
-                    await html5QrCode.start(
-                        backCameraId, 
-                        config,
-                        (decodedText) => {
-                            document.getElementById('serial').value = decodedText;
-                            statusDiv.innerHTML = "<span style='color: #4CAF50;'>✓ Barcode Scanned!</span>";
-                            stopScanner();
-                        }
-                    );
-                    
-                    startButton.innerHTML = "Stop Scanner";
-                    startButton.style.backgroundColor = "#ff5252";
-                    startButton.onclick = stopScanner;
-                    startButton.disabled = false;
-                } else {
-                    statusDiv.innerHTML = "<span style='color: #ff5252;'>Error: No cameras found.</span>";
-                    startButton.disabled = false;
-                }
+                await html5QrCode.start(
+                    cameraId, 
+                    config,
+                    (decodedText) => {
+                        document.getElementById('serial').value = decodedText;
+                        statusDiv.innerHTML = "<span style='color: #10b981;'>✅ Barcode Captured!</span>";
+                        stopScanner();
+                    }
+                );
+                
+                startButton.innerHTML = "🛑 Stop Scanner";
+                startButton.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
+                startButton.onclick = stopScanner;
+                startButton.disabled = false;
             } catch (err) {
-                statusDiv.innerHTML = "<span style='color: #ff5252;'>Error: Camera permission denied.</span>";
+                statusDiv.innerHTML = "<span style='color: #ef4444;'>Error: Connection failed.</span>";
                 startButton.disabled = false;
             }
         }
@@ -90,14 +170,12 @@
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
                     const startButton = document.getElementById('startScan');
-                    startButton.innerHTML = "Open Camera Scanner";
-                    startButton.style.backgroundColor = "#2196F3";
+                    startButton.innerHTML = "📷 Open Selected Camera";
+                    startButton.style.background = "linear-gradient(135deg, #3b82f6, #2563eb)";
                     startButton.onclick = startScanner;
                 });
             }
         }
-
-        document.getElementById('startScan').onclick = startScanner;
 
         async function submitScan() {
             const serial = document.getElementById('serial').value;
@@ -105,12 +183,11 @@
             const statusDiv = document.getElementById('statusMessage');
 
             if(!serial) {
-                statusDiv.innerHTML = "<span style='color: #ff5252;'>Error: Serial Number required.</span>";
+                statusDiv.innerHTML = "<span style='color: #ef4444;'>Error: Serial ID required.</span>";
                 return;
             }
 
-            statusDiv.innerHTML = "<span style='color: #ffa500;'>Transmitting to AWS...</span>";
-
+            statusDiv.innerHTML = "<span style='color: #3b82f6;'>Cloud Handshake...</span>";
             const apiUrl = "https://ii97ncprab.execute-api.us-east-1.amazonaws.com/scan";
 
             try {
@@ -121,13 +198,13 @@
                 });
 
                 if(response.ok) {
-                    statusDiv.innerHTML = "<span style='color: #4CAF50;'>✓ Logged to DynamoDB & ServiceNow!</span>";
+                    statusDiv.innerHTML = "<span style='color: #10b981;'>🎯 Logged to AWS & ServiceNow!</span>";
                     document.getElementById('serial').value = '';
                 } else {
-                    statusDiv.innerHTML = "<span style='color: #ff5252;'>Error: AWS rejected the scan.</span>";
+                    statusDiv.innerHTML = "<span style='color: #ef4444;'>Error: Cloud rejected the link.</span>";
                 }
             } catch (error) {
-                statusDiv.innerHTML = "<span style='color: #ff5252;'>Error: Could not reach the API.</span>";
+                statusDiv.innerHTML = "<span style='color: #ef4444;'>Error: Pipeline unreachable.</span>";
             }
         }
     </script>
