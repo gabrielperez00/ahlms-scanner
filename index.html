@@ -48,29 +48,24 @@ async function startScanner() {
     const statusDiv = document.getElementById('statusMessage');
     const startButton = document.getElementById('startScan');
     
-    // Disable button during initialization
     startButton.disabled = true;
     statusDiv.innerHTML = "Initializing camera...";
 
     html5QrCode = new Html5Qrcode("reader");
     
-    // Upgraded High-Precision Config
-const config = { 
-    fps: 25, // Higher frames per second for faster "Auto-detection"
-    qrbox: { width: 280, height: 120 }, // Narrower box to target specific barcodes
-    aspectRatio: 1.777778,
-    videoConstraints: {
-        focusMode: "continuous", // Tells the phone to keep trying to focus
-        width: { min: 640, ideal: 1280, max: 1920 }, // Forces HD resolution
-        height: { min: 480, ideal: 720, max: 1080 }
-    }
-};
+    const config = { 
+        fps: 25, 
+        qrbox: { width: 280, height: 120 },
+        aspectRatio: 1.777778
+    };
 
- try {
-        // This version asks the phone for all cameras and picks the last one (usually the main back lens)
+    try {
+        // Manually list all cameras and pick the last one (usually the back lens) [cite: 2177, 2178]
         const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length) {
-            const backCameraId = devices[devices.length - 1].id;
+        
+        if (devices && devices.length > 0) {
+            const backCameraId = devices[devices.length - 1].id; [cite: 2178]
+            
             await html5QrCode.start(
                 backCameraId, 
                 config,
@@ -80,11 +75,15 @@ const config = {
                     stopScanner();
                 }
             );
+            
+            startButton.innerHTML = "Stop Scanner";
+            startButton.style.backgroundColor = "#ff5252";
+            startButton.onclick = stopScanner;
+            startButton.disabled = false;
+        } else {
+            statusDiv.innerHTML = "<span style='color: #ff5252;'>Error: No cameras found.</span>";
+            startButton.disabled = false;
         }
-        startButton.innerHTML = "Stop Scanner";
-        startButton.style.backgroundColor = "#ff5252";
-        startButton.onclick = stopScanner;
-        startButton.disabled = false;
     } catch (err) {
         statusDiv.innerHTML = "<span style='color: #ff5252;'>Error: Camera permission denied.</span>";
         startButton.disabled = false;
