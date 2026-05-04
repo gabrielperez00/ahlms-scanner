@@ -66,10 +66,10 @@ const config = {
     }
 };
 
-    try {
-        // Start the camera (preferring the back camera)
+ try {
+        // Updated to force the back camera (environment)
         await html5QrCode.start(
-            { facingMode: "environment" }, 
+            { facingMode: { exact: "environment" } }, 
             config,
             (decodedText) => {
                 // SUCCESS: Found a barcode!
