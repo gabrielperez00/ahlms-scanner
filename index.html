@@ -67,17 +67,20 @@ const config = {
 };
 
  try {
-        // Updated to force the back camera (environment)
-        await html5QrCode.start(
-            { facingMode: { exact: "environment" } }, 
-            config,
-            (decodedText) => {
-                // SUCCESS: Found a barcode!
-                document.getElementById('serial').value = decodedText;
-                statusDiv.innerHTML = "<span style='color: #4CAF50;'>✓ Barcode Scanned!</span>";
-                stopScanner();
-            }
-        );
+        // This version asks the phone for all cameras and picks the last one (usually the main back lens)
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length) {
+            const backCameraId = devices[devices.length - 1].id;
+            await html5QrCode.start(
+                backCameraId, 
+                config,
+                (decodedText) => {
+                    document.getElementById('serial').value = decodedText;
+                    statusDiv.innerHTML = "<span style='color: #4CAF50;'>✓ Barcode Scanned!</span>";
+                    stopScanner();
+                }
+            );
+        }
         startButton.innerHTML = "Stop Scanner";
         startButton.style.backgroundColor = "#ff5252";
         startButton.onclick = stopScanner;
