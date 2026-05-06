@@ -90,7 +90,6 @@
             background: #242E3A;
         }
 
-        /* Angled "Parallelogram" Button Style */
         .action-button { 
             width: 100%; 
             padding: 18px; 
@@ -105,26 +104,12 @@
             margin-top: 10px;
         }
 
-        .btn-primary { 
-            background-color: var(--primary-cyan); 
-            color: #000; 
-        }
+        .btn-primary { background-color: var(--primary-cyan); color: #000; }
+        .btn-success { background-color: var(--primary-green); color: #000; }
+        .btn-danger { background-color: var(--danger-red); color: #FFF; }
+        .btn-neutral { background-color: #4A5568; color: #FFF; }
 
-        .btn-success { 
-            background-color: var(--primary-green); 
-            color: #000; 
-        }
-
-        .btn-danger { 
-            background-color: var(--danger-red); 
-            color: #FFF; 
-        }
-
-        .action-button:hover { 
-            filter: brightness(1.2); 
-            transform: translateY(-2px);
-        }
-
+        .action-button:hover { filter: brightness(1.2); transform: translateY(-2px); }
         .action-button:active { transform: translateY(0); }
 
         #reader { 
@@ -170,6 +155,10 @@
             Initialize Scanner
         </button>
 
+        <button id="toggleFlash" onclick="toggleTorch()" class="action-button btn-neutral" style="display:none;">
+            Activate Lighting
+        </button>
+
         <div style="margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px;">
             <div class="form-group">
                 <label for="serial">Asset Serial Identifier</label>
@@ -195,6 +184,7 @@
 
     <script>
         let html5QrCode;
+        let isFlashOn = false;
 
         async function getCameras() {
             const cameraSelect = document.getElementById('cameraSelect');
@@ -218,69 +208,84 @@
 
         window.onload = getCameras;
 
-       async function startScanner() {
-    const statusDiv = document.getElementById('statusMessage');
-    const startButton = document.getElementById('startScan');
-    const cameraId = document.getElementById('cameraSelect').value;
-    
-    if(!cameraId) {
-        statusDiv.innerHTML = "<span class='status-error'>SELECT LENS INTERFACE</span>";
-        return;
-    }
-
-    startButton.disabled = true;
-    statusDiv.innerHTML = "<span class='status-neutral'>SYNCING OPTICAL SENSORS...</span>";
-
-    if(html5QrCode) { try { await html5QrCode.clear(); } catch(e) {} }
-    html5QrCode = new Html5Qrcode("reader");
-    
-    // UPGRADED CONFIGURATION
-    const config = { 
-        fps: 30, // Higher frame rate for faster detection
-        qrbox: { width: 300, height: 150 }, // Adjusted for 1D barcodes
-        aspectRatio: 1.777778,
-        // This is the CRITICAL part: enabling all common hardware formats
-        formatsToSupport: [ 
-            Html5QrcodeSupportedFormats.CODE_128,
-            Html5QrcodeSupportedFormats.CODE_39,
-            Html5QrcodeSupportedFormats.EAN_13,
-            Html5QrcodeSupportedFormats.UPC_A,
-            Html5QrcodeSupportedFormats.QR_CODE 
-        ]
-    };
-
-    try {
-        await html5QrCode.start(
-            cameraId, 
-            config,
-            (decodedText) => {
-                // Play a subtle vibration or sound could go here if native
-                document.getElementById('serial').value = decodedText;
-                statusDiv.innerHTML = "<span class='status-success'>IDENTIFIER VERIFIED: " + decodedText + "</span>";
-                stopScanner();
-            },
-            (errorMessage) => {
-                // Silently ignore failed frame scans to keep the UI clean
+        async function startScanner() {
+            const statusDiv = document.getElementById('statusMessage');
+            const startButton = document.getElementById('startScan');
+            const flashButton = document.getElementById('toggleFlash');
+            const cameraId = document.getElementById('cameraSelect').value;
+            
+            if(!cameraId) {
+                statusDiv.innerHTML = "<span class='status-error'>SELECT LENS INTERFACE</span>";
+                return;
             }
-        );
-        
-        startButton.innerHTML = "TERMINATE SCAN";
-        startButton.className = "action-button btn-danger";
-        startButton.onclick = stopScanner;
-        startButton.disabled = false;
-    } catch (err) {
-        statusDiv.innerHTML = "<span class='status-error'>SENSORS OFFLINE: RECHECK PERMISSIONS</span>";
-        startButton.disabled = false;
-    }
-}
+
+            startButton.disabled = true;
+            statusDiv.innerHTML = "<span class='status-neutral'>SYNCING OPTICAL SENSORS...</span>";
+
+            if(html5QrCode) { try { await html5QrCode.clear(); } catch(e) {} }
+            html5QrCode = new Html5Qrcode("reader");
+            
+            const config = { 
+                fps: 30, 
+                qrbox: { width: 300, height: 150 }, 
+                aspectRatio: 1.777778,
+                formatsToSupport: [ 
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.CODE_39,
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.QR_CODE 
+                ]
+            };
+
+            try {
+                await html5QrCode.start(
+                    cameraId, 
+                    config,
+                    (decodedText) => {
+                        document.getElementById('serial').value = decodedText;
+                        statusDiv.innerHTML = "<span class='status-success'>IDENTIFIER VERIFIED: " + decodedText + "</span>";
+                        stopScanner();
+                    }
+                );
+                
+                startButton.innerHTML = "Terminate Scan";
+                startButton.className = "action-button btn-danger";
+                startButton.onclick = stopScanner;
+                startButton.disabled = false;
+
+                // Show flash button if supported by the device
+                if (html5QrCode.isTorchSupported()) {
+                    flashButton.style.display = "block";
+                }
+
+            } catch (err) {
+                statusDiv.innerHTML = "<span class='status-error'>SENSORS OFFLINE: RECHECK PERMISSIONS</span>";
+                startButton.disabled = false;
+            }
+        }
+
         function stopScanner() {
+            const flashButton = document.getElementById('toggleFlash');
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
                     const startButton = document.getElementById('startScan');
                     startButton.innerHTML = "Initialize Scanner";
                     startButton.className = "action-button btn-primary";
                     startButton.onclick = startScanner;
+                    flashButton.style.display = "none";
+                    isFlashOn = false;
                 });
+            }
+        }
+
+        async function toggleTorch() {
+            const flashButton = document.getElementById('toggleFlash');
+            try {
+                isFlashOn = !isFlashOn;
+                await html5QrCode.setTorch(isFlashOn);
+                flashButton.innerHTML = isFlashOn ? "Deactivate Lighting" : "Activate Lighting";
+            } catch (err) {
+                console.error("Flash error:", err);
             }
         }
 
