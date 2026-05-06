@@ -218,45 +218,61 @@
 
         window.onload = getCameras;
 
-        async function startScanner() {
-            const statusDiv = document.getElementById('statusMessage');
-            const startButton = document.getElementById('startScan');
-            const cameraId = document.getElementById('cameraSelect').value;
-            
-            if(!cameraId) {
-                statusDiv.innerHTML = "<span class='status-error'>SELECT LENS INTERFACE</span>";
-                return;
+       async function startScanner() {
+    const statusDiv = document.getElementById('statusMessage');
+    const startButton = document.getElementById('startScan');
+    const cameraId = document.getElementById('cameraSelect').value;
+    
+    if(!cameraId) {
+        statusDiv.innerHTML = "<span class='status-error'>SELECT LENS INTERFACE</span>";
+        return;
+    }
+
+    startButton.disabled = true;
+    statusDiv.innerHTML = "<span class='status-neutral'>SYNCING OPTICAL SENSORS...</span>";
+
+    if(html5QrCode) { try { await html5QrCode.clear(); } catch(e) {} }
+    html5QrCode = new Html5Qrcode("reader");
+    
+    // UPGRADED CONFIGURATION
+    const config = { 
+        fps: 30, // Higher frame rate for faster detection
+        qrbox: { width: 300, height: 150 }, // Adjusted for 1D barcodes
+        aspectRatio: 1.777778,
+        // This is the CRITICAL part: enabling all common hardware formats
+        formatsToSupport: [ 
+            Html5QrcodeSupportedFormats.CODE_128,
+            Html5QrcodeSupportedFormats.CODE_39,
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.QR_CODE 
+        ]
+    };
+
+    try {
+        await html5QrCode.start(
+            cameraId, 
+            config,
+            (decodedText) => {
+                // Play a subtle vibration or sound could go here if native
+                document.getElementById('serial').value = decodedText;
+                statusDiv.innerHTML = "<span class='status-success'>IDENTIFIER VERIFIED: " + decodedText + "</span>";
+                stopScanner();
+            },
+            (errorMessage) => {
+                // Silently ignore failed frame scans to keep the UI clean
             }
-
-            startButton.disabled = true;
-            statusDiv.innerHTML = "<span class='status-neutral'>CONNECTING TO OPTICAL SENSORS...</span>";
-
-            if(html5QrCode) { try { await html5QrCode.clear(); } catch(e) {} }
-            html5QrCode = new Html5Qrcode("reader");
-            
-            const config = { fps: 25, qrbox: { width: 280, height: 120 }, aspectRatio: 1.777778 };
-
-            try {
-                await html5QrCode.start(
-                    cameraId, 
-                    config,
-                    (decodedText) => {
-                        document.getElementById('serial').value = decodedText;
-                        statusDiv.innerHTML = "<span class='status-success'>IDENTIFIER CAPTURED</span>";
-                        stopScanner();
-                    }
-                );
-                
-                startButton.innerHTML = "Terminate Scan";
-                startButton.className = "action-button btn-danger";
-                startButton.onclick = stopScanner;
-                startButton.disabled = false;
-            } catch (err) {
-                statusDiv.innerHTML = "<span class='status-error'>INTERFACE CONNECTION FAILED</span>";
-                startButton.disabled = false;
-            }
-        }
-
+        );
+        
+        startButton.innerHTML = "TERMINATE SCAN";
+        startButton.className = "action-button btn-danger";
+        startButton.onclick = stopScanner;
+        startButton.disabled = false;
+    } catch (err) {
+        statusDiv.innerHTML = "<span class='status-error'>SENSORS OFFLINE: RECHECK PERMISSIONS</span>";
+        startButton.disabled = false;
+    }
+}
         function stopScanner() {
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
