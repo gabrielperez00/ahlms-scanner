@@ -3,117 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHLMS | Cloud Inventory Portal</title>
+    <title>AHLMS Portfolio Demo</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        :root {
-            --primary: #4CAF50;
-            --secondary: #3b82f6;
-            --danger: #ef4444;
-            --bg: #0f172a;
-            --card: rgba(30, 41, 59, 0.7);
-        }
+        /* Reset */
+        body { margin: 0; font-family: 'Segoe UI', Inter, sans-serif; background-color: #FFFFFF; color: #333; }
+        * { box-sizing: border-box; }
 
-        body { 
-            font-family: 'Inter', -apple-system, sans-serif; 
-            background-color: var(--bg); 
-            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
-            color: #f8fafc; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh;
-            margin: 0; 
-            padding: 20px; 
-        }
+        /* --- Top Header (Power Apps branding) --- */
+        .powerapps-header { display: flex; align-items: center; background-color: #0056D2; color: white; padding: 0 15px; height: 50px; font-weight: bold; }
+        .powerapps-header-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .powerapps-header-left img.powerapps-logo { width: 20px; }
+        .powerapps-header-right { display: flex; align-items: center; gap: 15px; background-color: #E3F2FD; color: #333; padding: 0 15px; height: 50px; font-weight: normal;}
+        .powerapps-header-right > * { cursor: pointer; }
+        .header-search { border: 1px solid #CCC; border-radius: 4px; padding: 5px 10px; font-size: 0.9rem; }
+        .icon { font-size: 1.2rem;}
 
-        .container { 
-            background: var(--card);
-            backdrop-filter: blur(10px);
-            padding: 30px; 
-            border-radius: 20px; 
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
-            width: 100%; 
-            max-width: 420px; 
-            text-align: center; 
-        }
+        /* --- Sub Header --- */
+        .powerapps-sub-header { display: flex; align-items: center; justify-content: space-between; background-color: #E3F2FD; color: #0056D2; padding: 0 15px; height: 40px; font-size: 0.9rem; font-weight: bold; border-bottom: 1px solid #EAEAEA;}
+        .filter { color: #94a3b8; font-weight: normal;}
 
-        h2 { color: var(--primary); margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
+        /* --- Main content --- */
+        main { padding: 20px; width: 100%; max-width: 1200px; margin: 0 auto; }
+        h2.recent-title { color: #0056D2; font-weight: bold; font-size: 1.4rem; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px;}
 
-        label { display: block; text-align: left; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; color: #94a3b8; }
+        /* --- The core scanner app detail view (AHLMS Portal) --- */
+        .portal-card { background: #FFFFFF; border: 1px solid #EAEAEA; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); width: 100%; max-width: 480px; margin-bottom: 30px; }
+        .portal-card-header { display: flex; align-items: center; gap: 10px; padding: 15px 20px; border-bottom: 1px solid #EAEAEA; }
+        .portal-card-title { color: #0056D2; font-weight: bold; font-size: 1.1rem; }
+        .portal-card-info { color: #94a3b8; font-size: 0.8rem; }
+        .portal-card-actions { margin-left: auto; color: #94a3b8; cursor: pointer; font-size: 1.2rem;}
 
-        input, select { 
-            width: 100%; 
-            padding: 14px; 
-            margin-bottom: 20px; 
-            border-radius: 10px; 
-            border: 1px solid #334155; 
-            background: #0f172a; 
-            color: white; 
-            box-sizing: border-box; 
-            font-size: 1rem;
-        }
+        /* Card Body (Form) */
+        .portal-card-body { padding: 25px; text-align: left; }
+        .portal-card-body label { display: block; text-align: left; margin-bottom: 8px; font-size: 0.8rem; font-weight: 700; color: #0056D2; text-transform: uppercase; letter-spacing: 0.5px;}
+        .portal-card-body input, .portal-card-body select { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px; border: 1px solid #CCC; background: #FFFFFF; color: #333; box-sizing: border-box; font-size: 1rem; transition: border-color 0.2s;}
+        .portal-card-body input:focus, .portal-card-body select:focus { border-color: #0056D2; outline: none; }
+        .portal-card-body select#cameraSelect { font-size: 0.9rem; color: #94a3b8;}
 
-        button { 
-            width: 100%; padding: 16px; border: none; border-radius: 12px; 
-            font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 1rem;
-        }
+        /* Buttons */
+        .powerapp-button { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s; font-size: 1rem; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px;}
+        .powerapp-button:active { transform: scale(0.98); }
+        .powerapp-button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        #startScan { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; margin-bottom: 10px;}
-        #submitBtn { background: linear-gradient(135deg, #10b981, #059669); color: white; margin-top: 15px;}
+        /* Replicated "Play" button style */
+        #startScan { background-color: #0056D2; color: white; border: 2px solid #0056D2; }
+        #startScan span.play-icon { font-size: 1.2rem; }
         
-        button:active { transform: scale(0.98); }
-        button:disabled { opacity: 0.5; }
+        /* Replicated unique rocket button (Submit) */
+        #submitBtn { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; font-size: 1.1rem;}
+        #submitBtn span.rocket-icon { font-size: 1.3rem; }
+        
+        /* Camera view */
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 15px; background: #F8F9FA; border: 1px solid #EAEAEA; min-height: 150px;}
+        
+        /* Status message */
+        #statusMessage { margin-top: 15px; font-size: 0.9rem; min-height: 24px; text-align: center; color: #94a3b8;}
 
-        #reader { width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 20px; background: #000; border: 2px solid #334155; }
-        #statusMessage { margin-top: 20px; font-size: 0.9rem; min-height: 20px; }
+        /* --- Replicated non-functional recent gallery gallery --- */
+        .other-recents-grid { margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+        .other-recent-card { background: #FFFFFF; border: 1px solid #EAEAEA; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; align-items: center; text-align: center;}
+        .other-icon { width: 35px; margin-bottom: 8px; }
+        .other-recent-card-title { color: #0056D2; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; }
+        .other-recent-card-info { color: #94a3b8; font-size: 0.75rem; margin-bottom: 10px;}
+        .other-recent-actions { display: flex; gap: 10px; margin-top: auto; color: #0056D2; font-size: 1.1rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>AHLMS Portal</h2>
-        
-        <label for="cameraSelect">SELECT CAMERA LENS</label>
-        <select id="cameraSelect">
-            <option value="">Detecting cameras...</option>
-        </select>
-        
-        <div id="reader"></div>
-        <button id="startScan" onclick="startScanner()">📷 Open Selected Camera</button>
+    <header class="powerapps-header">
+        <div class="powerapps-header-left">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iI0ZGRkZGRiIgZD0iTTEyIDJDMi4zIDUgMi4zIDEwLjEgNi4yIDE3TDguOCA4LjZsLS44IDIuNEw2IDhMNi4yIDEwLjFDMTIuOSAzIDIxLjYgNSAyMS44IDhMMjMgOC44bC44LDIuNEwxNS45IDIxLjlsLjgtMi40SDI0VjhoLTEuMWMtLjUgMC0xIC4yLTEuNC41QzE2IDguOSAxMC4xIDguNSA3LjIgMTFMNCA4QzkuOSAzLDUgMjIuMSw4LDhMNC41IDExQzQuMyAxMC45LDIsMTAsMiw5LjdDMS45IDguNywzLjIsOCwzLjIsOFY2bDQuOCAxLjhMMjAuNSA2QzE5LjEgNy4zLDEyLjUgMiwxMiwyeiIvPjwvc3ZnPg==" class="powerapps-logo" alt="Power Apps Logo">
+            <span>Power Apps</span>
+        </div>
+        <div class="powerapps-header-right">
+            <input type="text" class="header-search" placeholder="🔍 Search">
+            <span class="icon">⚙️</span>
+            <span class="icon">?</span>
+        </div>
+    </header>
 
-        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-            <label for="serial">DEVICE SERIAL NUMBER</label>
-            <input type="text" id="serial" placeholder="Waiting for scan...">
+    <div class="powerapps-sub-header">
+        <span>All apps</span>
+        <span class="filter">▼ Filter</span>
+    </div>
 
-            <label for="deviceType">ASSET CATEGORY</label>
-            <select id="deviceType">
-                <option value="HP EliteBook">HP EliteBook (Laptop)</option>
-                <option value="Dell Latitude">Dell Latitude (Laptop)</option>
-                <option value="Cisco Router">Cisco Catalyst (Network)</option>
-            </select>
+    <main>
+        <h2 class="recent-title">Recent</h2>
 
-            <button id="submitBtn" onclick="submitScan()">🚀 Submit to Cloud</button>
+        <div class="portal-card">
+            <div class="portal-card-header">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwNTZEMiIgZD0iTTEyIDJDMi4zIDUgMi4zIDEwLjEgNi4yIDE3TDguOCA4LjZsLS44IDIuNEw2IDhMNi4yIDEwLjFDMTIuOSAzIDIxLjYgNSAyMS44IDhMMjMgOC44bC44LDIuNEwxNS45IDIxLjlsLjgtMi40SDI0VjhoLTEuMWMtLjUgMC0xIC4yLTEuNC41QzE2IDguOSAxMC4xIDguNSA3LjIgMTFMNCA4QzkuOSAzLDUgMjIuMSw4LDhMNC41IDExQzQuMyAxMC45LDIsMTAsMiw5LjdDMS45IDguNywzLjIsOCwzLjIsOFY2bDQuOCAxLjhMMjAuNSA2QzE5LjEgNy4zLDEyLjUgMiwxMiwyeiIvPjwvc3ZnPg==" alt="App Icon" style="width: 20px;">
+                <span class="portal-card-title">AHLMS Tech Portal</span>
+                <span class="portal-card-info">Edited: 10/16/2023</span>
+                <span class="portal-card-actions">...</span>
+            </div>
+            <div class="portal-card-body">
+                <label for="cameraSelect">Camera Lens</label>
+                <select id="cameraSelect">
+                    <option value="">Detecting cameras...</option>
+                </select>
+
+                <div id="reader"></div>
+
+                <button id="startScan" onclick="startScanner()" class="powerapp-button">
+                    <span class="play-icon">▶️</span> Play & Open Camera
+                </button>
+
+                <div style="margin-top: 25px; border-top: 1px solid #EAEAEA; padding-top: 25px;">
+                    <label for="serial">DEVICE SERIAL NUMBER</label>
+                    <input type="text" id="serial" placeholder="Waiting for scan...">
+
+                    <label for="deviceType">ASSET CATEGORY</label>
+                    <select id="deviceType">
+                        <option value="HP EliteBook">HP EliteBook (Laptop)</option>
+                        <option value="Dell Latitude">Dell Latitude (Laptop)</option>
+                        <option value="Cisco Router">Cisco Catalyst (Network)</option>
+                    </select>
+
+                    <button id="submitBtn" onclick="submitScan()" class="powerapp-button">
+                        <span class="rocket-icon">🚀</span> Submit to Cloud
+                    </button>
+                </div>
+
+                <div id="statusMessage"></div>
+            </div>
         </div>
 
-        <div id="statusMessage"></div>
-    </div>
+        <div class="other-recents-grid">
+            <div class="other-recent-card">
+                <img src="data:image/svg+xml;base64,..." class="other-icon" alt="Project Icon">
+                <span class="other-recent-card-title">Project Delta</span>
+                <span class="other-recent-card-info">Edited: 10/15/2023</span>
+                <div class="other-recent-actions">
+                    <span>▶️</span>
+                    <span>...</span>
+                </div>
+            </div>
+            <div class="other-recent-card">
+                <img src="data:image/svg+xml;base64,..." class="other-icon" alt="Inventory Icon">
+                <span class="other-recent-card-title">Cloud Inventory</span>
+                <span class="other-recent-card-info">Edited: 10/14/2023</span>
+                <div class="other-recent-actions">
+                    <span>▶️</span>
+                    <span>...</span>
+                </div>
+            </div>
+            <div class="other-recent-card">
+                <img src="data:image/svg+xml;base64,..." class="other-icon" alt="Support Icon">
+                <span class="other-recent-card-title">AHLMS Support</span>
+                <span class="other-recent-card-info">Edited: 10/12/2023</span>
+                <div class="other-recent-actions">
+                    <span>▶️</span>
+                    <span>...</span>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
         let html5QrCode;
 
-        // Automatically load camera list on page load
         async function getCameras() {
             const cameraSelect = document.getElementById('cameraSelect');
             try {
                 const devices = await Html5Qrcode.getCameras();
                 if (devices && devices.length > 0) {
-                    cameraSelect.innerHTML = ""; // Clear loader
+                    cameraSelect.innerHTML = "";
                     devices.forEach((device, index) => {
                         const option = document.createElement("option");
                         option.value = device.id;
-                        // Better labeling for different lenses
                         option.text = device.label || `Camera ${index + 1}`;
                         cameraSelect.appendChild(option);
                     });
@@ -138,7 +197,7 @@
             }
 
             startButton.disabled = true;
-            statusDiv.innerHTML = "<span style='color: #94a3b8;'>Activating lens...</span>";
+            statusDiv.innerHTML = "Activating cloud sensors...";
 
             if(html5QrCode) { try { await html5QrCode.clear(); } catch(e) {} }
             html5QrCode = new Html5Qrcode("reader");
@@ -151,17 +210,19 @@
                     config,
                     (decodedText) => {
                         document.getElementById('serial').value = decodedText;
-                        statusDiv.innerHTML = "<span style='color: #10b981;'>✅ Barcode Captured!</span>";
+                        statusDiv.innerHTML = "<span style='color: #10b981;'>🎯 Barcode Captured!</span>";
                         stopScanner();
                     }
                 );
                 
-                startButton.innerHTML = "🛑 Stop Scanner";
-                startButton.style.background = "linear-gradient(135deg, #ef4444, #dc2626)";
+                // Update button style to Power Apps format
+                startButton.innerHTML = "<span class='play-icon'>🛑</span> Stop Scanner";
+                startButton.style.background = "#ff5252";
+                startButton.style.border = "2px solid #ff5252";
                 startButton.onclick = stopScanner;
                 startButton.disabled = false;
             } catch (err) {
-                statusDiv.innerHTML = "<span style='color: #ef4444;'>Error: Connection failed.</span>";
+                statusDiv.innerHTML = "<span style='color: #ef4444;'>Error: Camera pipeline reachable.</span>";
                 startButton.disabled = false;
             }
         }
@@ -170,8 +231,10 @@
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
                     const startButton = document.getElementById('startScan');
-                    startButton.innerHTML = "📷 Open Selected Camera";
-                    startButton.style.background = "linear-gradient(135deg, #3b82f6, #2563eb)";
+                    // Reset to Power Apps format
+                    startButton.innerHTML = "<span class='play-icon'>▶️</span> Play & Open Camera";
+                    startButton.style.background = "#0056D2";
+                    startButton.style.border = "2px solid #0056D2";
                     startButton.onclick = startScanner;
                 });
             }
@@ -204,7 +267,7 @@
                     statusDiv.innerHTML = "<span style='color: #ef4444;'>Error: Cloud rejected the link.</span>";
                 }
             } catch (error) {
-                statusDiv.innerHTML = "<span style='color: #ef4444;'>Error: Pipeline unreachable.</span>";
+                statusDiv.innerHTML = "<span style='color: #ef4444;'>Error: Could not reach the cloud.</span>";
             }
         }
     </script>
