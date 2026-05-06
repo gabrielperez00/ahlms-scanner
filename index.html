@@ -18,90 +18,35 @@
         }
 
         body { 
-            margin: 0; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; font-family: 'Segoe UI', sans-serif; 
             background-color: var(--bg-dark); 
             background-image: radial-gradient(circle at 0% 0%, #16202c 0%, var(--bg-dark) 70%);
-            color: var(--text-main); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            padding: 20px; 
+            color: var(--text-main); display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; padding: 20px; 
         }
 
         * { box-sizing: border-box; }
 
         .container { 
-            background: var(--card-surface);
-            padding: 40px; 
-            border-radius: 4px; 
+            background: var(--card-surface); padding: 40px; border-radius: 4px; 
             border-left: 4px solid var(--primary-cyan);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
-            width: 100%; 
-            max-width: 440px; 
+            width: 100%; max-width: 440px; 
         }
 
-        .header-context { 
-            color: var(--text-dim); 
-            text-transform: uppercase; 
-            letter-spacing: 3px; 
-            font-size: 0.7rem; 
-            font-weight: 800; 
-            margin-bottom: 8px; 
-        }
-
-        h2.portal-title { 
-            font-size: 1.5rem; 
-            margin: 0 0 35px 0; 
-            letter-spacing: 1px; 
-            font-weight: 300;
-            color: var(--text-main);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding-bottom: 15px;
-        }
+        .header-context { color: var(--text-dim); text-transform: uppercase; letter-spacing: 3px; font-size: 0.7rem; font-weight: 800; margin-bottom: 8px; }
+        h2.portal-title { font-size: 1.5rem; margin: 0 0 35px 0; letter-spacing: 1px; font-weight: 300; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
 
         .form-group { margin-bottom: 25px; text-align: left; }
+        label { display: block; margin-bottom: 10px; font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
 
-        label { 
-            display: block; 
-            margin-bottom: 10px; 
-            font-size: 0.75rem; 
-            font-weight: 700; 
-            color: var(--text-dim); 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-        }
-
-        input, select { 
-            width: 100%; 
-            padding: 15px; 
-            border-radius: 2px; 
-            border: 1px solid #2D3748; 
-            background: var(--input-field); 
-            color: var(--text-main); 
-            font-size: 1rem; 
-            transition: all 0.2s ease;
-        }
-
-        input:focus, select:focus { 
-            border-color: var(--primary-cyan); 
-            outline: none; 
-            background: #242E3A;
-        }
+        input, select { width: 100%; padding: 15px; border-radius: 2px; border: 1px solid #2D3748; background: var(--input-field); color: var(--text-main); font-size: 1rem; }
+        input:focus { border-color: var(--primary-cyan); outline: none; }
 
         .action-button { 
-            width: 100%; 
-            padding: 18px; 
-            border: none; 
-            font-weight: 800; 
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            font-size: 0.9rem; 
-            text-transform: uppercase; 
-            letter-spacing: 2px;
-            clip-path: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%);
-            margin-top: 10px;
+            width: 100%; padding: 18px; border: none; font-weight: 800; cursor: pointer; 
+            transition: all 0.3s ease; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px;
+            clip-path: polygon(5% 0%, 100% 0%, 95% 100%, 0% 100%); margin-top: 10px;
         }
 
         .btn-primary { background-color: var(--primary-cyan); color: #000; }
@@ -109,28 +54,8 @@
         .btn-danger { background-color: var(--danger-red); color: #FFF; }
         .btn-neutral { background-color: #4A5568; color: #FFF; }
 
-        .action-button:hover { filter: brightness(1.2); transform: translateY(-2px); }
-        .action-button:active { transform: translateY(0); }
-
-        #reader { 
-            width: 100%; 
-            border-radius: 2px; 
-            overflow: hidden; 
-            margin-bottom: 20px; 
-            background: #000; 
-            border: 1px solid #2D3748;
-            min-height: 200px;
-        }
-
-        #statusMessage { 
-            margin-top: 30px; 
-            font-size: 0.8rem; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            min-height: 20px; 
-            text-align: center;
-        }
-
+        #reader { width: 100%; border-radius: 2px; overflow: hidden; margin-bottom: 20px; background: #000; border: 1px solid #2D3748; min-height: 200px; }
+        #statusMessage { margin-top: 30px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; min-height: 20px; text-align: center; }
         .status-success { color: var(--primary-green); }
         .status-error { color: var(--danger-red); }
         .status-neutral { color: var(--primary-cyan); }
@@ -144,31 +69,19 @@
 
         <div class="form-group">
             <label for="cameraSelect">Hardware Interface</label>
-            <select id="cameraSelect">
-                <option value="">Detecting active lenses...</option>
-            </select>
+            <select id="cameraSelect"><option value="">Detecting active lenses...</option></select>
         </div>
 
         <div id="reader"></div>
         
-        <button id="startScan" onclick="startScanner()" class="action-button btn-primary">
-            Initialize Scanner
-        </button>
-
-        <button id="aiAnalyze" onclick="analyzeWithAI()" class="action-button btn-neutral">
-    Analyze with AI
-</button>
-
-        <button id="toggleFlash" onclick="toggleTorch()" class="action-button btn-neutral" style="display:none;">
-            Activate Lighting
-        </button>
+        <button id="startScan" onclick="startScanner()" class="action-button btn-primary">Initialize Scanner</button>
+        <button id="aiAnalyze" onclick="analyzeWithAI()" class="action-button btn-neutral">Analyze with AI</button>
 
         <div style="margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 30px;">
             <div class="form-group">
                 <label for="serial">Asset Serial Identifier</label>
                 <input type="text" id="serial" placeholder="Await scan input...">
             </div>
-
             <div class="form-group">
                 <label for="deviceType">Asset Classification</label>
                 <select id="deviceType">
@@ -177,18 +90,14 @@
                     <option value="Cisco Router">Cisco Catalyst (Network)</option>
                 </select>
             </div>
-
-            <button id="submitBtn" onclick="submitScan()" class="action-button btn-success">
-                Execute Cloud Log
-            </button>
+            <button id="submitBtn" onclick="submitScan()" class="action-button btn-success">Execute Cloud Log</button>
         </div>
-
         <div id="statusMessage"></div>
     </div>
 
     <script>
         let html5QrCode;
-        let isFlashOn = false;
+        const apiUrl = "https://ii97ncprab.execute-api.us-east-1.amazonaws.com/scan";
 
         async function getCameras() {
             const cameraSelect = document.getElementById('cameraSelect');
@@ -202,12 +111,8 @@
                         option.text = device.label || `LENS_INTERFACE_0${index + 1}`;
                         cameraSelect.appendChild(option);
                     });
-                } else {
-                    cameraSelect.innerHTML = "<option>Error: No lenses found</option>";
                 }
-            } catch (err) {
-                cameraSelect.innerHTML = "<option>Error: Permission restricted</option>";
-            }
+            } catch (err) { cameraSelect.innerHTML = "<option>Error: Permission restricted</option>"; }
         }
 
         window.onload = getCameras;
@@ -215,81 +120,77 @@
         async function startScanner() {
             const statusDiv = document.getElementById('statusMessage');
             const startButton = document.getElementById('startScan');
-            const flashButton = document.getElementById('toggleFlash');
             const cameraId = document.getElementById('cameraSelect').value;
+            if(!cameraId) { statusDiv.innerHTML = "<span class='status-error'>SELECT LENS INTERFACE</span>"; return; }
             
-            if(!cameraId) {
-                statusDiv.innerHTML = "<span class='status-error'>SELECT LENS INTERFACE</span>";
-                return;
-            }
-
             startButton.disabled = true;
             statusDiv.innerHTML = "<span class='status-neutral'>SYNCING OPTICAL SENSORS...</span>";
-
             if(html5QrCode) { try { await html5QrCode.clear(); } catch(e) {} }
             html5QrCode = new Html5Qrcode("reader");
             
-            const config = { 
-                fps: 30, 
-                qrbox: { width: 300, height: 150 }, 
-                aspectRatio: 1.777778,
-                formatsToSupport: [ 
-                    Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.QR_CODE 
-                ]
-            };
-
             try {
-                await html5QrCode.start(
-                    cameraId, 
-                    config,
-                    (decodedText) => {
-                        document.getElementById('serial').value = decodedText;
-                        statusDiv.innerHTML = "<span class='status-success'>IDENTIFIER VERIFIED: " + decodedText + "</span>";
-                        stopScanner();
-                    }
-                );
-                
+                await html5QrCode.start(cameraId, { fps: 20, qrbox: { width: 300, height: 150 } }, (text) => {
+                    document.getElementById('serial').value = text;
+                    statusDiv.innerHTML = "<span class='status-success'>IDENTIFIER CAPTURED</span>";
+                    stopScanner();
+                });
                 startButton.innerHTML = "Terminate Scan";
                 startButton.className = "action-button btn-danger";
                 startButton.onclick = stopScanner;
                 startButton.disabled = false;
-
-                // Show flash button if supported by the device
-                if (html5QrCode.isTorchSupported()) {
-                    flashButton.style.display = "block";
-                }
-
-            } catch (err) {
-                statusDiv.innerHTML = "<span class='status-error'>SENSORS OFFLINE: RECHECK PERMISSIONS</span>";
-                startButton.disabled = false;
-            }
+            } catch (err) { statusDiv.innerHTML = "<span class='status-error'>INTERFACE FAILED</span>"; startButton.disabled = false; }
         }
 
         function stopScanner() {
-            const flashButton = document.getElementById('toggleFlash');
             if (html5QrCode) {
                 html5QrCode.stop().then(() => {
                     const startButton = document.getElementById('startScan');
                     startButton.innerHTML = "Initialize Scanner";
                     startButton.className = "action-button btn-primary";
                     startButton.onclick = startScanner;
-                    flashButton.style.display = "none";
-                    isFlashOn = false;
                 });
             }
         }
 
-        async function toggleTorch() {
-            const flashButton = document.getElementById('toggleFlash');
+        async function analyzeWithAI() {
+            const statusDiv = document.getElementById('statusMessage');
+            
+            // 1. Alert test - to see if the button is even 'awake'
+            statusDiv.innerHTML = "<span class='status-neutral'>AI CAPTURING FRAME...</span>";
+
             try {
-                isFlashOn = !isFlashOn;
-                await html5QrCode.setTorch(isFlashOn);
-                flashButton.innerHTML = isFlashOn ? "Deactivate Lighting" : "Activate Lighting";
+                // Find the video element created by the library
+                const video = document.querySelector('#reader video');
+                if (!video) {
+                    statusDiv.innerHTML = "<span class='status-error'>ERROR: SCANNER NOT INITIALIZED</span>";
+                    return;
+                }
+
+                // 2. Create a snapshot
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                const imageData = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+
+                // 3. Send to AWS
+                statusDiv.innerHTML = "<span class='status-neutral'>AI ANALYZING DATA...</span>";
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData })
+                });
+
+                const data = await response.json();
+                if (data.detectedValue && data.detectedValue !== "NOT_DETECTED") {
+                    document.getElementById('serial').value = data.detectedValue;
+                    statusDiv.innerHTML = "<span class='status-success'>AI VERIFICATION COMPLETE</span>";
+                } else {
+                    statusDiv.innerHTML = "<span class='status-error'>AI ERROR: NO TEXT DETECTED</span>";
+                }
             } catch (err) {
-                console.error("Flash error:", err);
+                statusDiv.innerHTML = "<span class='status-error'>AI PIPELINE ERROR</span>";
+                console.error(err);
             }
         }
 
@@ -297,78 +198,21 @@
             const serial = document.getElementById('serial').value;
             const deviceType = document.getElementById('deviceType').value;
             const statusDiv = document.getElementById('statusMessage');
-
-            if(!serial) {
-                statusDiv.innerHTML = "<span class='status-error'>ERROR: SERIAL ID REQUIRED</span>";
-                return;
-            }
+            if(!serial) { statusDiv.innerHTML = "<span class='status-error'>ERROR: SERIAL ID REQUIRED</span>"; return; }
 
             statusDiv.innerHTML = "<span class='status-neutral'>INITIATING CLOUD HANDSHAKE...</span>";
-            const apiUrl = "https://ii97ncprab.execute-api.us-east-1.amazonaws.com/scan";
-
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ SerialNumber: serial, DeviceType: deviceType })
                 });
-
                 if(response.ok) {
-                    statusDiv.innerHTML = "<span class='status-success'>TRANSMISSION COMPLETE: AWS & SERVICENOW UPDATED</span>";
+                    statusDiv.innerHTML = "<span class='status-success'>TRANSMISSION COMPLETE</span>";
                     document.getElementById('serial').value = '';
-                } else {
-                    statusDiv.innerHTML = "<span class='status-error'>CLOUD ERROR: PACKET REJECTED</span>";
-                }
-            } catch (error) {
-                statusDiv.innerHTML = "<span class='status-error'>NETWORK ERROR: ENDPOINT UNREACHABLE</span>";
-            }
+                } else { statusDiv.innerHTML = "<span class='status-error'>CLOUD REJECTED</span>"; }
+            } catch (error) { statusDiv.innerHTML = "<span class='status-error'>ENDPOINT UNREACHABLE</span>"; }
         }
-        async function analyzeWithAI() {
-    const statusDiv = document.getElementById('statusMessage');
-    const serialInput = document.getElementById('serial');
-    
-    // Ensure the camera is actually running
-    if (!html5QrCode || !html5QrCode.isScanning) {
-        statusDiv.innerHTML = "<span class='status-error'>ERROR: INITIALIZE INTERFACE FIRST</span>";
-        return;
-    }
-
-    statusDiv.innerHTML = "<span class='status-neutral'>UPLOADING TO AI PIPELINE...</span>";
-
-    try {
-        // 1. Grab the current frame from the camera feed
-        const video = document.querySelector('#reader video');
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // 2. Convert the image to a format AWS understands (Base64)
-        const imageData = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-
-        // 3. Send the image to your AWS API
-        const apiUrl = "https://ii97ncprab.execute-api.us-east-1.amazonaws.com/scan";
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: imageData })
-        });
-
-        const data = await response.json();
-        
-        // 4. Fill the box with whatever text the AI found
-        if (data.detectedValue && data.detectedValue !== "NOT_DETECTED") {
-            serialInput.value = data.detectedValue;
-            statusDiv.innerHTML = "<span class='status-success'>AI VERIFICATION COMPLETE</span>";
-        } else {
-            statusDiv.innerHTML = "<span class='status-error'>AI ERROR: NO TEXT DETECTED</span>";
-        }
-    } catch (err) {
-        statusDiv.innerHTML = "<span class='status-error'>AI PIPELINE UNREACHABLE</span>";
-        console.error(err);
-    }
-}
     </script>
 </body>
 </html>
