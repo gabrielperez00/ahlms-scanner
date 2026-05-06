@@ -55,10 +55,27 @@
         .btn-neutral { background-color: #4A5568; color: #FFF; }
 
         #reader { width: 100%; border-radius: 2px; overflow: hidden; margin-bottom: 20px; background: #000; border: 1px solid #2D3748; min-height: 200px; }
-        #statusMessage { margin-top: 30px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; min-height: 20px; text-align: center; }
-        .status-success { color: var(--primary-green); }
-        .status-error { color: var(--danger-red); }
-        .status-neutral { color: var(--primary-cyan); }
+        
+        /* New Optimized Notification Bar */
+        #statusMessage { 
+            margin-top: 30px; 
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            min-height: 50px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px dashed rgba(255,255,255,0.1);
+        }
+        
+        .status-success { color: var(--primary-green); border-color: var(--primary-green) !important; font-weight: bold; }
+        .status-error { color: var(--danger-red); border-color: var(--danger-red) !important; }
+        .status-neutral { color: var(--primary-cyan); border-color: var(--primary-cyan) !important; }
     </style>
 </head>
 <body>
@@ -68,8 +85,10 @@
         <h2 class="portal-title">AHLMS Tech Portal</h2>
 
         <div class="form-group">
-            <label for="cameraSelect">Hardware Interface</label>
-            <select id="cameraSelect"><option value="">Detecting active lenses...</option></select>
+            <label for="cameraSelect">Hardware Interface (Auto-Switch)</label>
+            <select id="cameraSelect" onchange="autoSwitchCamera()">
+                <option value="">Detecting active lenses...</option>
+            </select>
         </div>
 
         <div id="reader"></div>
@@ -92,7 +111,7 @@
             </div>
             <button id="submitBtn" onclick="submitScan()" class="action-button btn-success">Execute Cloud Log</button>
         </div>
-        <div id="statusMessage"></div>
+        <div id="statusMessage">READY FOR INPUT</div>
     </div>
 
     <script>
@@ -111,70 +130,67 @@
                         option.text = device.label || `LENS_INTERFACE_0${index + 1}`;
                         cameraSelect.appendChild(option);
                     });
+                    // Start the first camera automatically
+                    startScanner();
                 }
             } catch (err) { cameraSelect.innerHTML = "<option>Error: Permission restricted</option>"; }
         }
 
         window.onload = getCameras;
 
+        // Optimization: Automatic camera switching
+        async function autoSwitchCamera() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                await html5QrCode.stop();
+            }
+            startScanner();
+        }
+
         async function startScanner() {
             const statusDiv = document.getElementById('statusMessage');
             const startButton = document.getElementById('startScan');
             const cameraId = document.getElementById('cameraSelect').value;
-            if(!cameraId) { statusDiv.innerHTML = "<span class='status-error'>SELECT LENS INTERFACE</span>"; return; }
+            if(!cameraId) return;
             
             startButton.disabled = true;
-            statusDiv.innerHTML = "<span class='status-neutral'>SYNCING OPTICAL SENSORS...</span>";
+            statusDiv.className = "status-neutral";
+            statusDiv.innerHTML = "LENS ACTIVE: AWAITING IDENTIFIER";
+
             if(html5QrCode) { try { await html5QrCode.clear(); } catch(e) {} }
             html5QrCode = new Html5Qrcode("reader");
             
             try {
                 await html5QrCode.start(cameraId, { fps: 20, qrbox: { width: 300, height: 150 } }, (text) => {
                     document.getElementById('serial').value = text;
-                    statusDiv.innerHTML = "<span class='status-success'>IDENTIFIER CAPTURED</span>";
-                    stopScanner();
+                    // Optimization: Prominent Scan Notification
+                    statusDiv.className = "status-success";
+                    statusDiv.innerHTML = "HARDWARE DETECTED:<br>" + text;
                 });
-                startButton.innerHTML = "Terminate Scan";
-                startButton.className = "action-button btn-danger";
-                startButton.onclick = stopScanner;
+                startButton.innerHTML = "Restart Interface";
+                startButton.className = "action-button btn-neutral";
                 startButton.disabled = false;
-            } catch (err) { statusDiv.innerHTML = "<span class='status-error'>INTERFACE FAILED</span>"; startButton.disabled = false; }
-        }
-
-        function stopScanner() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    const startButton = document.getElementById('startScan');
-                    startButton.innerHTML = "Initialize Scanner";
-                    startButton.className = "action-button btn-primary";
-                    startButton.onclick = startScanner;
-                });
+            } catch (err) { 
+                statusDiv.className = "status-error";
+                statusDiv.innerHTML = "INTERFACE FAILED"; 
+                startButton.disabled = false; 
             }
         }
 
         async function analyzeWithAI() {
             const statusDiv = document.getElementById('statusMessage');
-            
-            // 1. Alert test - to see if the button is even 'awake'
-            statusDiv.innerHTML = "<span class='status-neutral'>AI CAPTURING FRAME...</span>";
+            const video = document.querySelector('#reader video');
+            if (!video) return;
+
+            statusDiv.className = "status-neutral";
+            statusDiv.innerHTML = "AI NEURAL PROCESSING...";
 
             try {
-                // Find the video element created by the library
-                const video = document.querySelector('#reader video');
-                if (!video) {
-                    statusDiv.innerHTML = "<span class='status-error'>ERROR: SCANNER NOT INITIALIZED</span>";
-                    return;
-                }
-
-                // 2. Create a snapshot
                 const canvas = document.createElement('canvas');
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 canvas.getContext('2d').drawImage(video, 0, 0);
                 const imageData = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
-                // 3. Send to AWS
-                statusDiv.innerHTML = "<span class='status-neutral'>AI ANALYZING DATA...</span>";
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -184,13 +200,16 @@
                 const data = await response.json();
                 if (data.detectedValue && data.detectedValue !== "NOT_DETECTED") {
                     document.getElementById('serial').value = data.detectedValue;
-                    statusDiv.innerHTML = "<span class='status-success'>AI VERIFICATION COMPLETE</span>";
+                    // Optimization: Prominent AI Notification
+                    statusDiv.className = "status-success";
+                    statusDiv.innerHTML = "AI ANALYSIS SUCCESS:<br>" + data.detectedValue;
                 } else {
-                    statusDiv.innerHTML = "<span class='status-error'>AI ERROR: NO TEXT DETECTED</span>";
+                    statusDiv.className = "status-error";
+                    statusDiv.innerHTML = "AI ERROR: DATA UNREADABLE";
                 }
             } catch (err) {
-                statusDiv.innerHTML = "<span class='status-error'>AI PIPELINE ERROR</span>";
-                console.error(err);
+                statusDiv.className = "status-error";
+                statusDiv.innerHTML = "AI PIPELINE OFFLINE";
             }
         }
 
@@ -198,9 +217,15 @@
             const serial = document.getElementById('serial').value;
             const deviceType = document.getElementById('deviceType').value;
             const statusDiv = document.getElementById('statusMessage');
-            if(!serial) { statusDiv.innerHTML = "<span class='status-error'>ERROR: SERIAL ID REQUIRED</span>"; return; }
+            if(!serial) { 
+                statusDiv.className = "status-error";
+                statusDiv.innerHTML = "SUBMISSION REJECTED: NO SERIAL"; 
+                return; 
+            }
 
-            statusDiv.innerHTML = "<span class='status-neutral'>INITIATING CLOUD HANDSHAKE...</span>";
+            statusDiv.className = "status-neutral";
+            statusDiv.innerHTML = "TRANSMITTING DATA TO CLOUD...";
+
             try {
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -208,10 +233,18 @@
                     body: JSON.stringify({ SerialNumber: serial, DeviceType: deviceType })
                 });
                 if(response.ok) {
-                    statusDiv.innerHTML = "<span class='status-success'>TRANSMISSION COMPLETE</span>";
+                    // Optimization: Clear for next scan immediately
                     document.getElementById('serial').value = '';
-                } else { statusDiv.innerHTML = "<span class='status-error'>CLOUD REJECTED</span>"; }
-            } catch (error) { statusDiv.innerHTML = "<span class='status-error'>ENDPOINT UNREACHABLE</span>"; }
+                    statusDiv.className = "status-success";
+                    statusDiv.innerHTML = "LOGGED TO AWS & SERVICENOW<br>READY FOR NEXT SCAN";
+                } else { 
+                    statusDiv.className = "status-error";
+                    statusDiv.innerHTML = "CLOUD REJECTION"; 
+                }
+            } catch (error) { 
+                statusDiv.className = "status-error";
+                statusDiv.innerHTML = "ENDPOINT TIMEOUT"; 
+            }
         }
     </script>
 </body>
