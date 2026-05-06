@@ -323,6 +323,52 @@
                 statusDiv.innerHTML = "<span class='status-error'>NETWORK ERROR: ENDPOINT UNREACHABLE</span>";
             }
         }
+        async function analyzeWithAI() {
+    const statusDiv = document.getElementById('statusMessage');
+    const serialInput = document.getElementById('serial');
+    
+    // Ensure the camera is actually running
+    if (!html5QrCode || !html5QrCode.isScanning) {
+        statusDiv.innerHTML = "<span class='status-error'>ERROR: INITIALIZE INTERFACE FIRST</span>";
+        return;
+    }
+
+    statusDiv.innerHTML = "<span class='status-neutral'>UPLOADING TO AI PIPELINE...</span>";
+
+    try {
+        // 1. Grab the current frame from the camera feed
+        const video = document.querySelector('#reader video');
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // 2. Convert the image to a format AWS understands (Base64)
+        const imageData = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+
+        // 3. Send the image to your AWS API
+        const apiUrl = "https://ii97ncprab.execute-api.us-east-1.amazonaws.com/scan";
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imageData })
+        });
+
+        const data = await response.json();
+        
+        // 4. Fill the box with whatever text the AI found
+        if (data.detectedValue && data.detectedValue !== "NOT_DETECTED") {
+            serialInput.value = data.detectedValue;
+            statusDiv.innerHTML = "<span class='status-success'>AI VERIFICATION COMPLETE</span>";
+        } else {
+            statusDiv.innerHTML = "<span class='status-error'>AI ERROR: NO TEXT DETECTED</span>";
+        }
+    } catch (err) {
+        statusDiv.innerHTML = "<span class='status-error'>AI PIPELINE UNREACHABLE</span>";
+        console.error(err);
+    }
+}
     </script>
 </body>
 </html>
