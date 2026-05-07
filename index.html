@@ -80,11 +80,11 @@
 <body>
 
     <div class="container">
-        <div class="header-context">System Environment: Production</div>
+        <div class="header-context">Gabriel Perez</div>
         <h2 class="portal-title">AHLMS Tech Portal</h2>
 
         <div class="form-group">
-            <label for="cameraSelect">Interface Selection (Auto-Sync)</label>
+            <label for="cameraSelect">(Auto-Sync)</label>
             <select id="cameraSelect" onchange="autoSwitchCamera()">
                 <option value="">Detecting active lenses...</option>
             </select>
@@ -108,7 +108,7 @@
                     <option value="Cisco Router">Cisco Catalyst (Network)</option>
                 </select>
             </div>
-            <button id="submitBtn" onclick="submitScan()" class="action-button btn-success">Execute Cloud Log</button>
+            <button id="submitBtn" onclick="submitScan()" class="action-button btn-success">Upload</button>
         </div>
         <div id="statusMessage">SYSTEM READY</div>
     </div>
@@ -116,6 +116,7 @@
     <script>
         let html5QrCode;
         const apiUrl = "https://ii97ncprab.execute-api.us-east-1.amazonaws.com/scan";
+
 
         async function getCameras() {
             const cameraSelect = document.getElementById('cameraSelect');
